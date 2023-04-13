@@ -2,23 +2,27 @@
   <SpinnerLoader v-if="loading" />
   <transition name="modal-fade" v-if="showModal">
     <div class="modal-backdrop">
-      <div class="modal">
-        <div class="border-b-[2px] border-b-gray-400">
-          <p class="text-[22px] font-bold">Confirm</p>
+      <div class="bg-white w-[400px] rounded-[4px]">
+        <div
+          class="border-b-[1px] rounded-tl-[4px] rounded-tr-[4px] h-[40px] px-[10px] bg-gray-100 flex items-center border-b-gray-200"
+        >
+          <p class="text-[18px] font-semibold">Confirm</p>
         </div>
-        <div class="py-[20px]">
+        <div class="py-[20px] px-[10px]">
           <p>Are your sure to update this product?</p>
         </div>
-        <div class="flex flex-row justify-start gap-3">
+        <div
+          class="flex border-t-[1px] px-[10px] h-[50px] items-center flex-row justify-end border-t-gray-200 gap-3"
+        >
           <button
             @click="updateProduct"
-            class="bg-blue-400 text-white px-[40px] py-[8px] rounded-[5px]"
+            class="bg-[#344b9e] text-white px-[30px] py-[5px] rounded-[5px]"
           >
             Yes
           </button>
           <button
             @click="close"
-            class="bg-red-500 text-white px-[40px] py-[8px] rounded-[5px]"
+            class="bg-red-500 text-white px-[30px] py-[5px] rounded-[5px]"
           >
             No
           </button>
@@ -26,46 +30,56 @@
       </div>
     </div>
   </transition>
-  <div class="flex flex-col items-center justify-center h-screen">
-    <div
-      class="sm:w-full md:w-[450px] shadow-lg flex flex-col py-[30px] bg-[#f8f9fa] px-2 justify-center items-center"
-    >
-      <div class="text-[22px] font-bold mb-6">Update Product</div>
-      <div class="flex flex-col gap-10 justify-center">
-        <div>
-          <input
-            type="text"
-            name="name"
-            v-model="product.name"
-            placeholder="Enter Name"
-            class="w-full border border-[#a3d0e4] rounded-md pl-4 py-3 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
-          />
-        </div>
-        <div>
-          <input
-            type="file"
-            name="image"
-            @change="onImageSelected"
-            class="w-full border border-[#a3d0e4] rounded-md pl-4 py-3 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
-          />
-        </div>
-        <div
-          v-if="showImage"
-          class="h-[200px] flex justify-center items-center border-[1px] p-2"
-        >
-          <img
-            :src="imageUrl"
-            alt="Product_image"
-            class="max-w-full max-h-full"
-          />
-        </div>
-        <div class="">
-          <button
-            class="w-full bg-[#5EA2EA] p-3 text-white rounded"
-            v-on:click="open"
+  <div>
+    <NavBar />
+    <BreadCrumbs parent="Home" path="/" active="Edit Product" />
+    <div class="flex flex-col mt-[60px] items-center justify-center">
+      <div
+        class="sm:w-full md:w-[450px] shadow-lg flex flex-col py-[30px] bg-[#f8f9fa] px-2 justify-center items-center"
+      >
+        <div class="text-[22px] font-bold mb-6 text-[#344b9e]">Update Product</div>
+        <div class="flex flex-col gap-10 justify-center">
+          <div>
+            <input
+              type="text"
+              name="name"
+              v-model="product.name"
+              placeholder="Enter Name"
+              class="w-full border border-[#a3d0e4] rounded-md pl-4 py-3 focus:outline-none focus:border-[#344b9e] focus:ring-1 focus:ring-[#344b9e]"
+              @input="changeName"
+            />
+          </div>
+          <div>
+            <input
+              type="file"
+              name="image"
+              @change="onImageSelected"
+              class="w-full border border-[#a3d0e4] rounded-md pl-4 py-3 focus:outline-none focus:border-[#344b9e] focus:ring-1 focus:ring-[#344b9e]"
+            />
+          </div>
+          <div
+            v-if="showImage"
+            class="h-[200px] flex justify-center items-center border-[1px] p-2"
           >
-            Update Product
-          </button>
+            <img
+              :src="imageUrl"
+              alt="Product_image"
+              class="max-w-full max-h-full"
+            />
+          </div>
+          <div class="">
+            <button
+              :class="
+                disableButton
+                  ? 'opacity-50 w-full bg-[#344b9e] p-3 text-white rounded'
+                  : 'opacity-100 w-full bg-[#344b9e] p-3 text-white rounded'
+              "
+              v-on:click="open"
+              :disabled="disableButton"
+            >
+              Update Product
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -75,10 +89,14 @@
 <script>
 import SpinnerLoader from "../spinner/SpinnerLoader.vue";
 import { http } from "../../axios/config";
+import BreadCrumbs from "../breadCrumbs/BreadCrumbs.vue";
+import NavBar from "../navbar/NavBar.vue";
 
 export default {
   components: {
     SpinnerLoader,
+    BreadCrumbs,
+    NavBar,
   },
   data() {
     return {
@@ -90,6 +108,7 @@ export default {
       showImage: false,
       loading: false,
       showModal: false,
+      disableButton: false,
     };
   },
 
@@ -131,6 +150,13 @@ export default {
     },
     open() {
       this.showModal = true;
+    },
+    changeName() {
+      if (this.product.name === "") {
+        this.disableButton = true;
+      } else {
+        this.disableButton = false;
+      }
     },
   },
   async mounted() {

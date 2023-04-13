@@ -1,20 +1,9 @@
 <template>
   <SpinnerLoader v-if="loading" />
-
   <div>
-    <div class="p-6">
-      <router-link
-        class="bg-[#5EA2EA] p-2 text-white rounded"
-        to="/add-product"
-      >
-        Add Product
-      </router-link>
-    </div>
-    <div v-if="!showTable()" class="p-5">
-      No Products are available. Please add new product.
-    </div>
+    <NavBar />
+    <BreadCrumbs parent="Home" path="/" active="Products" />
     <DataTable
-      v-if="showTable()"
       v-model:filters="filters"
       :value="products"
       :paginator="true"
@@ -24,12 +13,21 @@
       :filters="true"
     >
       <template #header>
-        <div class="flex justify-start">
+        <div class="flex justify-between items-center">
+          <div
+            class="flex justify-center items-center p-3 rounded-full bg-[#25377B] cursor-pointer"
+            @click="goToProduct"
+            v-tooltip="'Add Product'"
+          >
+            <i class="pi pi-plus text-white"></i>
+          </div>
           <span class="p-input-icon-left pl-5">
             <input
+              v-model="searchTerm"
+              @input="filterData"
               type="text"
               placeholder="Filter"
-              class="w-96 border border-[#a3d0e4] rounded-md pl-4 py-3 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+              class="w-[300px] border border-[#a3d0e4] rounded-md pl-2 md:pl-4 py-2 md:py-3 focus:outline-none focus:border-[#25377B] focus:ring-1 focus:ring-[#25377B] placeholder:text-[14px]"
             />
           </span>
         </div>
@@ -70,7 +68,7 @@
         <Column header="Action">
           <template #body="rowData">
             <div class="flex flex-row gap-2">
-              <div class="hover:bg-[#3489e5] p-2 rounded-[2px] bg-[#5EA2EA]">
+              <div class="hover:bg-[#344b9e] p-2 rounded-[2px] bg-[#25377B]">
                 <RouterLink
                   :to="'/edit-product/' + rowData.data.id"
                   class="text-white rounded"
@@ -79,7 +77,7 @@
                 </RouterLink>
               </div>
               <div
-                class="hover:bg-[#dc3545] p-2 rounded-[2px] bg-[#f86c6b]"
+                class="hover:bg-[#f86c6b] p-2 rounded-[2px] bg-[#dc3545]"
                 @click="openModal(rowData.data.id)"
               >
                 <button class="text-white rounded">
@@ -93,23 +91,27 @@
     </DataTable>
     <transition name="modal-fade">
       <div class="modal-backdrop" v-if="showModal">
-        <div class="modal">
-          <div class="border-b-[2px] border-b-gray-400">
-            <p class="text-[22px] font-bold">Confirm</p>
+        <div class="bg-white w-[400px] rounded-[4px]">
+          <div
+            class="border-b-[1px] rounded-tl-[4px] rounded-tr-[4px] h-[40px] px-[10px] bg-gray-100 flex items-center border-b-gray-200"
+          >
+            <p class="text-[18px] font-semibold">Confirm</p>
           </div>
-          <div class="py-[20px]">
+          <div class="py-[20px] px-[10px]">
             <p>Are your sure to delete this product?</p>
           </div>
-          <div class="flex flex-row justify-start gap-3">
+          <div
+            class="flex border-t-[1px] px-[10px] h-[50px] items-center flex-row justify-end border-t-gray-200 gap-3"
+          >
             <button
               @click="deleteProduct"
-              class="bg-blue-400 text-white px-[40px] py-[8px] rounded-[5px]"
+              class="bg-[#344b9e] text-white px-[30px] py-[5px] rounded-[5px]"
             >
               Yes
             </button>
             <button
               @click="close"
-              class="bg-red-500 text-white px-[40px] py-[8px] rounded-[5px]"
+              class="bg-red-500 text-white px-[30px] py-[5px] rounded-[5px]"
             >
               No
             </button>
@@ -125,12 +127,15 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import { http } from "../../axios/config";
 import SpinnerLoader from "../spinner/SpinnerLoader.vue";
+import BreadCrumbs from "../breadCrumbs/BreadCrumbs.vue";
+import NavBar from "../navbar/NavBar.vue";
 
 export default {
   data() {
     return {
       name: "",
       products: [],
+      defaultProducts: [],
       columns: [
         { field: "name", header: "Name" },
         // { field: "createdAt", header: "Created at" },
@@ -140,12 +145,15 @@ export default {
       loading: false,
       showModal: false,
       productId: null,
+      searchTerm: "",
     };
   },
   components: {
     DataTable,
     Column,
     SpinnerLoader,
+    BreadCrumbs,
+    NavBar,
   },
   methods: {
     async loadData() {
@@ -153,6 +161,7 @@ export default {
       try {
         let result = await http.get("/product/get-products");
         this.products = result.data;
+        this.defaultProducts = result.data;
         this.imageUrl;
         this.loading = false;
       } catch (error) {
@@ -215,6 +224,20 @@ export default {
         return false;
       }
     },
+    goToProduct() {
+      this.$router.push("/add-product");
+    },
+    filterData() {
+      if (this.searchTerm !== "") {
+        this.products = this.products.filter((item) => {
+          return item.name
+            .toLowerCase()
+            .includes(this.searchTerm.toLowerCase());
+        });
+      } else {
+        return (this.products = this.defaultProducts);
+      }
+    },
   },
   mounted() {
     this.loadData();
@@ -229,19 +252,6 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.modal {
-  background: #ffffff;
-  box-shadow: 2px 2px 20px 1px;
-  overflow-x: auto;
-  display: flex;
-  flex-direction: column;
-  width: 400px;
-  padding: 20px;
-  border-radius: 10px;
-  padding-top: 40px;
-  padding-bottom: 40px;
 }
 
 .modal-header,
