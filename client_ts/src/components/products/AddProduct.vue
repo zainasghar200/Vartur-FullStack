@@ -92,6 +92,7 @@ import { defineComponent } from "vue";
 import { http } from "@/axios/config";
 import BreadCrumbs from "../breadCrumbs/BreadCrumbs.vue";
 import SpinnerLoader from "../spinner/SpinnerLoader.vue";
+import { useToast } from "primevue/usetoast";
 import { ProductForm } from "@/interfaces/ProductInterface";
 
 export default defineComponent({
@@ -99,6 +100,29 @@ export default defineComponent({
     NavBar,
     BreadCrumbs,
     SpinnerLoader,
+  },
+  setup() {
+    const toast = useToast();
+    function successToast(msg: string) {
+      toast.add({
+        severity: "success",
+        summary: "Add Product",
+        detail: msg,
+        life: 2000,
+      });
+    }
+    function errorToast(msg: string) {
+      toast.add({
+        severity: "error",
+        summary: "Add Product",
+        detail: msg,
+        life: 2000,
+      });
+    }
+    return {
+      successToast,
+      errorToast,
+    };
   },
   data() {
     return {
@@ -134,15 +158,14 @@ export default defineComponent({
         const formData = new FormData();
         formData.append("name", this.product.name);
         formData.append("image", this.product.image);
-        const response = await http.post("/product/add-product", formData);
-        // this.$toast.success(response.data.msg);
-        console.log(response);
+        const res = await http.post("/product/add-product", formData);
+        this.successToast(res.data.msg);
         this.showModal = false;
         this.loading = false;
         this.$router.push("/");
       } catch (error: any) {
         console.log(error.response.data.msg);
-        // this.$toast.error(error.response.data.msg);
+        this.errorToast(error.response.data.msg);
         this.loading = false;
       }
     },

@@ -79,3 +79,21 @@ To run the project we use 'npm run serve'. This command will use .env file for e
 ## npm run dev
 
 To run the project we use 'npm run dev'. This command will use .env.production file for environment and run app in production mode
+
+# Client Side Setup in TypeScript
+
+# Installation
+
+Following are the steps to setup this project
+
+## npm install
+
+First you have to install node_modules folder by using 'npm install'
+
+## npm run serve
+
+To run the project we use 'npm run serve'. This command will use .env file for environment
+
+## npm run dev
+
+To run the project we use 'npm run dev'. This command will use .env.production file for environment and run app in production mode

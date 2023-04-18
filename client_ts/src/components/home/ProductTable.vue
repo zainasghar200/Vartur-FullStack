@@ -132,8 +132,32 @@ import {
 } from "../../interfaces/ProductInterface";
 import BreadCrumbs from "../breadCrumbs/BreadCrumbs.vue";
 import SpinnerLoader from "../spinner/SpinnerLoader.vue";
+import { useToast } from "primevue/usetoast";
 
 export default defineComponent({
+  setup() {
+    const toast = useToast();
+    function successToast(msg: string) {
+      toast.add({
+        severity: "success",
+        summary: "Delete Product",
+        detail: msg,
+        life: 2000,
+      });
+    }
+    function errorToast(msg: string) {
+      toast.add({
+        severity: "error",
+        summary: "Delete Product",
+        detail: msg,
+        life: 2000,
+      });
+    }
+    return {
+      successToast,
+      errorToast,
+    };
+  },
   data() {
     return {
       name: "" as string,
@@ -186,14 +210,14 @@ export default defineComponent({
           "/product/delete-product/" + this.productId
         );
         if (result.status == 200) {
-          // this.$toast.success(result.data.msg);
+          this.successToast(result.data.msg);
           this.loadData();
           this.loading = false;
           this.showModal = false;
         }
       } catch (error: any) {
         console.log(error.response.data.msg);
-        // this.$toast.error(error.response.data.msg);
+        this.errorToast(error.response.data.msg);
         this.loading = false;
         this.showModal = false;
       }
